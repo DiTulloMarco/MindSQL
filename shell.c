@@ -50,6 +50,7 @@ int parse_line(char* tokens[MAX_TOKENS]){
     char input[MAX_INPUT];
     fgets(input, MAX_INPUT, stdin);
     int n_args = 0;
+    if(strlen(input) <= 0) return 0;
     char* token = strtok(input, " \t\n");
     for(; token != NULL;){
         tokens[n_args++] = duplicate_string(token);
@@ -64,7 +65,7 @@ int do_shell(const char* prompt){
         fputs(prompt, stdout);
         char* arguments[MAX_TOKENS];
         int tokens = parse_line(arguments);
-        if(1 == tokens && strcmp(arguments[0], "\0") == 0) return 0;
+        if(tokens == 0) continue;
         if((*lookup(arguments[0]))(tokens-1, arguments) == -1) continue;
         cleanup(tokens, arguments);
     }
