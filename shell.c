@@ -24,6 +24,7 @@ static const Keyword keywords[] = {
     { "exit", &close },
     { "connect",  &connect},
     { "disconnect", &disconnect },
+    { "help",  &help},
     // { "SELECT", CMD_DB },
     // { "INSERT", CMD_DB },
     // { "CREATE", CMD_DB },
