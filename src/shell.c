@@ -1,5 +1,4 @@
 #include "shell.h"
-#include "commands.c"
 
 typedef int (*functionCall)(int,char*[]);
 
@@ -8,25 +7,28 @@ typedef struct {
     functionCall function;
 } Keyword;
 
+extern CurrentState* state;
+
 void cleanup(int n_args, char* arguments[]){
     for(int i=0; i<n_args; i++)
         free(arguments[i]);
     if(DEBUG) printf("cleaned up %d arguments\n", n_args);
 }
 
-int close(int args, char* arguments[]){
+int close_MS(int args, char* arguments[]){
     printf("goodbye\n");
     cleanup(args+1, arguments);
     exit(0);
 }
 
 static const Keyword keywords[] = {
-    { "exit", &close },
-    { "connect",  &connect},
-    { "disconnect", &disconnect },
-    // { "SELECT", CMD_DB },
-    // { "INSERT", CMD_DB },
-    // { "CREATE", CMD_DB },
+  { "exit", &close_MS },
+  { "list", &list_dbs },
+  { "create", &create_db },
+  { "connect",  &connect },
+  { "disconnect", &disconnect },
+  { "check", &check_current_db },
+  { "create-table", &create_table },
 };
 
 functionCall lookup(const char *token) {
@@ -59,16 +61,19 @@ int parse_line(char* tokens[MAX_TOKENS]){
 
 
 int do_shell(const char* prompt){
-    for(;;){
-        fputs(prompt, stdout);
-        char* arguments[MAX_TOKENS];
-        int tokens = parse_line(arguments);
-        if(1 == tokens && strcmp(arguments[0], "\0") == 0) return 0;
-        if((*lookup(arguments[0]))(tokens-1, arguments) == -1) continue;
-        cleanup(tokens, arguments);
-    }
+  for(;;){
+    fputs(prompt, stdout);
+    char* arguments[MAX_TOKENS];
+    int tokens = parse_line(arguments);
+    if(1 == tokens && strcmp(arguments[0], "\0") == 0) return 0;
+    if((*lookup(arguments[0]))(tokens-1, arguments) == -1) continue;
+    cleanup(tokens, arguments);
+  }
 }
 
+
 int main(int argc, char const *argv[]){
-    return do_shell(PROMPT);
+  state = (CurrentState*) malloc(sizeof(CurrentState));
+  state->db_connected = (char*) malloc(sizeof(char) * MAX_DB_NAME);
+  return do_shell(PROMPT);
 }
